@@ -31,8 +31,9 @@ prompt() {
 
 #show all partitions
 clear
-sudo -S blkid 
+sudo -S blkid | sed -E 's|(/dev/[^ :]+)|\x1b[31m\1\x1b[0m|g'
 #sudo -S is needed to run blkid, otherwise the script will bork.
+#sed -E 's|(/dev/[^ :]+)|\x1b[31m\1\x1b[0m|g' is used to color the output in red.
 
 
 # Ask for external drive and partition information
@@ -63,15 +64,20 @@ pause
 
 DEVICE=$(prompt "Enter the device name for your external hard drive (e.g., /dev/sdb)" "/dev/sdb")
 PARTITION="${DEVICE}1"
+clear
+sudo -S blkid | sed -E "s|($DEVICE[^ :]*)|\\x1b[31m\\1\\x1b[0m|g"
+#claude opus prompt: explain this to me like im 5
+#The command `sudo -S blkid | sed -E "s|($DEVICE[^ :]*)|\\x1b[31m\\1\\x1b[0m|g"` is used to display the list of block devices and their UUIDs, 
+#with the specified device highlighted in red. Here's a breakdown of the command:
+
+#`sudo -S blkid`: Runs the `blkid` command with superuser privileges. The `-S` option suppresses prompting for a password.
+#`| sed -E "s|($DEVICE[^ :]*)|\\x1b[31m\\1\\x1b[0m|g"`: Pipes the output of `blkid` to `sed`. The `sed` command is used to search for the specified device 
+#in the output and highlight it by wrapping it in ANSI escape codes for red color.
+
+
 
 # Confirm with user
-echo "You have chosen the device: $DEVICE with partition: $PARTITION"
-confirm=$(prompt "Is this correct? (yes/no)" "yes")
-
-if [[ "$confirm" != "yes" ]]; then
-    echo "Exiting script."
-    exit 1
-fi
+echo "You have chosen the device: $DEVICE"
 
 # Check if the device exists
 if [ ! -b "$DEVICE" ]; then
@@ -84,13 +90,14 @@ fi
 #which is used to check if a block device exists. If the device does not 
 #exist, it prints an error message and exits the script with a status of 1.
 
+
+echo "let's look at the partitions on this drive."
+sudo -S parted "$DEVICE" print
+echo "if you want to partition this drive, lets do it now."
 pause
-echo "let's run parted to see if you wanna partition this drive."
 sudo -S parted "$DEVICE"
+echo "let's take a break before we go on."
 pause
-
-
-
 
 
 
