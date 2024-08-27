@@ -1,7 +1,6 @@
 #! /bin/bash
-# step a1: Put debian onto a external nvme with minimal software. 
-# step a2-an: EFI boot from USB stick and then finish on a partition on the 1TB NVMe. Setup dogecoin following the tutorial on raspibolt and adapt toward dogecoin.
-# Using ChatGPT 4o
+# step a1a: Use debootstrap to install debian onto an external hard drive
+
 # prompt1: step me through using debootstrap to install debian onto an external hard drive
 # prompt2: can you collate these steps into a bash script and have it ask the user for input when necessary?
 
