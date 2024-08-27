@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-# tertiary script A1a1: python script gets info from lsblk and writes to file.
+# quinary script A1a1: python script gets info from lsblk and writes to file.
 
 import subprocess
 
