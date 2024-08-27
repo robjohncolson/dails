@@ -79,6 +79,21 @@ if [ ! -b "$DEVICE" ]; then
     exit 1
 fi
 
+#claude opus prompt: explain this to me like im 5
+#The script checks if the specified device exists using the `-b` flag, 
+#which is used to check if a block device exists. If the device does not 
+#exist, it prints an error message and exits the script with a status of 1.
+
+pause
+echo "let's run parted to see if you wanna partition this drive."
+sudo -S parted "$DEVICE"
+pause
+
+
+
+
+
+
 # Format and mount the partition
 echo "Formatting the partition $PARTITION with ext4 filesystem..."
 sudo mkfs.ext4 "$PARTITION"
