@@ -1,5 +1,5 @@
 #! /bin/bash
-# A1a: Use debootstrap to install debian onto an external hard drive
+# quaternary script A1a: Use debootstrap to install debian onto an external hard drive
 
 # prompt1: step me through using debootstrap to install debian onto an external hard drive
 # prompt2: can you collate these steps into a bash script and have it ask the user for input when necessary?
