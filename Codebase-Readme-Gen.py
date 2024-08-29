@@ -2,8 +2,13 @@ import os
 import re
 
 def get_file_content(file_path):
-    with open(file_path, 'r') as file:
-        return file.read()
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    except UnicodeDecodeError:
+        # If UTF-8 fails, try reading as binary
+        with open(file_path, 'rb') as file:
+            return file.read().decode('utf-8', errors='ignore')
 
 def update_readme(readme_content, codebase):
     # Update script links and descriptions
