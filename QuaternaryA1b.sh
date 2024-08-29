@@ -89,10 +89,14 @@ fi
 #The script checks if the specified device exists using the `-b` flag, 
 #which is used to check if a block device exists. If the device does not 
 #exist, it prints an error message and exits the script with a status of 1.
-
-
+#parted -s /dev/sdX -- mklabel msdos \
+#    mkpart primary fat32 64s 4MiB \
+#    mkpart primary fat32 4MiB -1s
+#The above command is considered best practice for creating partitions on a cheap flash drive.
+#https://www.gnu.org/software/parted/manual/html_node/mkpart.html
 echo "let's look at the partitions on this drive."
 sudo -S parted "$DEVICE" print
+python3 QuinaryA1b1.py
 echo "if you want to partition this drive, lets do it now."
 pause
 sudo -S parted "$DEVICE"

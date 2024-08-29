@@ -4,3 +4,4 @@
 
 # Run quaternary script A1a: Use debootstrap to install debian onto an external hard drive
 ./QuaternaryA1a.sh
+./QuaternaryA1b.sh

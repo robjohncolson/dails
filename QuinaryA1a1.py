@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python3
 # quinary script A1a1: python script gets info from lsblk and writes to file.
 
 import subprocess
@@ -14,3 +14,10 @@ def write_to_file(info):
         file.write(info)
 
 if __name__ == "__main__":
+    # Get the block device information
+    block_info = get_block_device_info()
+    
+    # Write the information to a file
+    write_to_file(block_info)
+    
+    print("Block device information has been written to 'block_device_info.txt'")

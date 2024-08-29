@@ -1,0 +1,12 @@
+NAME          SIZE TYPE MOUNTPOINT
+loop0         2.7G loop /usr/lib/live/mount/rootfs/filesystem.squashfs
+sda          14.6G disk 
+├─sda1        8.6G part /usr/lib/live/mount/medium
+└─sda2          6G part /usr/lib/live/mount/persistence/sda2
+sdb         931.5G disk 
+└─sdb5      857.1G part /media/user/silverblock
+nvme0n1     119.2G disk 
+├─nvme0n1p1   100M part 
+├─nvme0n1p2    16M part 
+├─nvme0n1p3 118.4G part 
+└─nvme0n1p4   768M part 
