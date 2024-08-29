@@ -1,8 +1,5 @@
-#! /bin/python
-#python3 QuinaryA1b1.py
-
-import sys  # Ensure this import is present
-import subprocess  # Import subprocess for command execution
+import sys
+import subprocess
 
 def get_free_space(device):
     # Get the partition information using the 'parted' command
@@ -14,18 +11,22 @@ def get_free_space(device):
 
     for line in lines:
         print(f"Parsing line: {line}")  # Debugging output
-
-        if "MB" in line:
+        if line.startswith("Disk "):
             parts = line.split()
             if len(parts) >= 3:
                 try:
-                    size = float(parts[1].strip('MB'))
-                    if parts[0].isdigit():  # If first part is a number (partition number)
-                        total_size_mb += size
-                    elif 'used' in line.lower():  # Check for used space keyword
-                        used_size_mb += size
+                    total_size_mb = float(parts[2].strip('MB'))
                 except ValueError:
-                    continue  # Skip lines that don't contain relevant numeric data
+                    print(f"Warning: Unable to parse total size from line: {line}")
+                    continue
+        elif "MB" in line and len(line.split()) >= 4:
+            parts = line.split()
+            try:
+                size = float(parts[3].strip('MB'))
+                used_size_mb += size
+            except ValueError:
+                print(f"Warning: Unable to parse used size from line: {line}")
+                continue
 
     # Calculate free space
     free_space_mb = total_size_mb - used_size_mb
@@ -35,12 +36,17 @@ def get_free_space(device):
     
     return free_space_mb
 
-
 def suggest_partition_table(total_size):
     # Calculate partition sizes based on total size
+    alignment = 4  # 4MiB alignment
     efi_size = 512  # MB
-    root_size = 20480  # MB (20GB)
-    swap_size = 4096  # MB (4GB)
+    swap_size = min(8192, 4096)  # MB (max 8GB, default 4GB)
+    root_size = min(total_size - efi_size - swap_size, 20480)  # MB (remaining space or max 20GB)
+    
+    # Adjust sizes to align with 4MiB
+    efi_size = ((efi_size + alignment - 1) // alignment) * alignment
+    root_size = ((root_size + alignment - 1) // alignment) * alignment
+    swap_size = ((swap_size + alignment - 1) // alignment) * alignment
     
     # Check if there is enough space for the partitions
     if total_size < (efi_size + root_size + swap_size):
@@ -49,16 +55,16 @@ def suggest_partition_table(total_size):
 
     print("Suggested Partition Table for Debian Installation:")
     print(f"1. EFI System Partition: {efi_size}MB (FAT32)")
-    print(f"2. Root Partition: {root_size // 1024}GB (ext4)")
+    print(f"2. Root Partition: {root_size}MB (ext4)")
     print(f"3. Swap Partition: {swap_size}MB (swap)")
 
     # Create command string for partitioning
     partition_cmd = (
-        "sudo parted {device} mklabel msdos && "
-        "sudo parted -s {device} mkpart primary fat32 1MiB {efi_size}MiB && "
-        "sudo parted -s {device} mkpart primary ext4 {efi_size}MiB {root_size}MiB && "
-        "sudo parted -s {device} mkpart primary linux-swap {root_size}MiB {swap_size}MiB"
-    ).format(efi_size=efi_size, root_size=root_size, swap_size=swap_size)
+        "sudo parted -s {device} mkpart primary fat32 4MiB {efi_end}MiB && "
+        "sudo parted -s {device} set 1 esp on && "
+        "sudo parted -s {device} mkpart primary ext4 {efi_end}MiB {root_end}MiB && "
+        "sudo parted -s {device} mkpart primary linux-swap {root_end}MiB 100%"
+    ).format(device="{device}", efi_end=efi_size+4, root_end=efi_size+root_size+4)
 
     return partition_cmd
 
@@ -84,10 +90,11 @@ def main():
 
     partition_cmd = partition_cmd.format(device=device)
 
-    print("Executing the following command to create the partition table:")
     print(partition_cmd)
+    #pause script
+    input("Executing the following command to create the partition table:)
     # Here you would execute the command using subprocess if needed
-    # subprocess.run(partition_cmd, shell=True)
+    subprocess.run(partition_cmd, shell=True)
 
 # Entry point of the script
 if __name__ == "__main__":
