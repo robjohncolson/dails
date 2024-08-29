@@ -22,21 +22,18 @@ def update_readme(readme_content, codebase):
             description = description.group(1) if description else "No description available"
             
             # Create or update the link in README
-            link_pattern = rf'<li>{script_type}:.*?</li>'
-            new_link = f'<li>{script_type}: <a href="https://github.com/robjohncolson/dails/blob/main/{script_name}">{description}</a></li>'
+            link_pattern = rf'\*\s*{script_type}:.*'
+            new_link = f'* {script_type}: [{description}](https://github.com/robjohncolson/dails/blob/main/{script_name})'
             
-            if re.search(link_pattern, readme_content):
-                readme_content = re.sub(link_pattern, new_link, readme_content)
+            if re.search(link_pattern, readme_content, re.MULTILINE):
+                readme_content = re.sub(link_pattern, new_link, readme_content, flags=re.MULTILINE)
             else:
-                # If the link doesn't exist, add it to the appropriate section
-                section_pattern = rf'<ul>\s*<li>{script_type[0]}.*?</ul>'
-                section_match = re.search(section_pattern, readme_content, re.DOTALL)
-                if section_match:
-                    section = section_match.group(0)
-                    updated_section = section.replace('</ul>', f'    {new_link}\n</ul>')
-                    readme_content = readme_content.replace(section, updated_section)
+                # If the link doesn't exist, add it to the end of the file
+                readme_content += f'\n{new_link}'
 
     return readme_content
+
+# ... rest of the code remains the same ...
 
 def main():
     codebase = {}
