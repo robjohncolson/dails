@@ -40,14 +40,17 @@ def main():
     readme_path = 'README.md'
     readme_content = get_file_content(readme_path)
     
+    # Convert HTML to Markdown
     h = html2text.HTML2Text()
     h.ignore_links = False
     markdown_content = h.handle(readme_content)
     
-    updated_content = update_readme(markdown_content, codebase)
+    updated_readme = update_readme(markdown_content, codebase)
     
     with open(readme_path, 'w') as file:
-        file.write(updated_content)
+        file.write(updated_readme)
+    
+    print(f"README.md has been updated based on the current user-created codebase.")
 
 if __name__ == "__main__":
     main()
