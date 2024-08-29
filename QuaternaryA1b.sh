@@ -63,7 +63,9 @@ pause() {
 pause
 
 DEVICE=$(prompt "Enter the device name for your external hard drive (e.g., /dev/sdb)" "/dev/sdb")
-PARTITION="${DEVICE}1"
+EFI_PARTITION="${DEVICE}1"
+ROOT_PARTITION="${DEVICE}2"
+SWAP_PARTITION="${DEVICE}3"
 clear
 sudo -S blkid | sed -E "s|($DEVICE[^ :]*)|\\x1b[31m\\1\\x1b[0m|g"
 #claude opus prompt: explain this to me like im 5
@@ -94,6 +96,8 @@ fi
 #    mkpart primary fat32 4MiB -1s
 #The above command is considered best practice for creating partitions on a cheap flash drive.
 #https://www.gnu.org/software/parted/manual/html_node/mkpart.html
+
+
 echo "let's look at the partitions on this drive."
 sudo -S parted "$DEVICE" print
 python3 QuinaryA1b1.py
@@ -106,14 +110,21 @@ pause
 
 
 # Format and mount the partition
-echo "Formatting the partition $PARTITION with ext4 filesystem..."
-sudo mkfs.ext4 "$PARTITION"
+
+echo "Formatting the partition $ROOT_PARTITION with ext4 filesystem..."
+sudo mkfs.ext4 "$ROOT_PARTITION"
 
 echo "Creating mount point and mounting the partition..."
 sudo mkdir -p /mnt/external
-sudo mount "$PARTITION" /mnt/external
-
+sudo mount "$ROOT_PARTITION" /mnt/external
 # Prompt for Debian release and mirror
+echo "Formatting the partition $EFI_PARTITION with fat32 filesystem..."
+sudo mkfs.fat -F32 "$EFI_PARTITION"
+
+echo "Creating mount point and mounting the partition..."
+sudo mkdir -p /mnt/external/boot/efi
+sudo mount "$EFI_PARTITION" /mnt/external/boot/efi
+
 RELEASE=$(prompt "Enter the Debian release to install (e.g., bullseye)" "bullseye")
 MIRROR=$(prompt "Enter the Debian mirror URL" "http://deb.debian.org/debian")
 
@@ -132,6 +143,9 @@ sudo mount --bind /sys /mnt/external/sys
 # Enter chroot
 sudo chroot /mnt/external <<EOF
 # Configure the system inside chroot
+# Gonna call python script to continue giving commands to the console across the chroot.
+python3 QuinaryA1b2.py
+
 echo "Configuring the system..."
 dpkg-reconfigure tzdata
 dpkg-reconfigure locales
@@ -159,4 +173,4 @@ sudo umount /mnt/external/dev
 sudo umount /mnt/external
 
 # Done
-echo "Debian installation completed successfully on $PARTITION."
+echo "Debian installation completed successfully on $ROOT_PARTITION."
