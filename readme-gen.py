@@ -1,5 +1,7 @@
 import os
 import re
+import html2text
+
 
 def get_file_content(file_path):
     try:
@@ -15,21 +17,21 @@ def update_readme(readme_content, codebase):
     for file, content in codebase.items():
         if file.endswith(('.sh', '.py')):
             script_name = os.path.basename(file)
-            script_type = script_name.split('.')[0]
             
             # Extract description from the script content
             description = re.search(r'#\s*(.*)', content)
             description = description.group(1) if description else "No description available"
             
             # Create or update the link in README
-            link_pattern = rf'\*\s*{script_type}:.*'
-            new_link = f'* {script_type}: [{description}](https://github.com/robjohncolson/dails/blob/main/{script_name})'
+            new_link = f"* [{script_name}](https://github.com/robjohncolson/dails/blob/main/{script_name}): {description}\n"
             
-            if re.search(link_pattern, readme_content, re.MULTILINE):
-                readme_content = re.sub(link_pattern, new_link, readme_content, flags=re.MULTILINE)
+            # Check if the file is already mentioned in the README
+            if script_name in readme_content:
+                # Replace the existing line
+                readme_content = re.sub(f".*{re.escape(script_name)}.*\n", new_link, readme_content)
             else:
-                # If the link doesn't exist, add it to the end of the file
-                readme_content += f'\n{new_link}'
+                # Add the new link to the end of the file
+                readme_content += new_link
 
     return readme_content
 
@@ -37,7 +39,7 @@ def update_readme(readme_content, codebase):
 
 def main():
     codebase = {}
-    for root, _, files in os.walk('.'):
+    for root, dirs, files in os.walk('.'):
         for file in files:
             if file.endswith(('.sh', '.py')):
                 file_path = os.path.join(root, file)
@@ -46,7 +48,12 @@ def main():
     readme_path = 'README.md'
     readme_content = get_file_content(readme_path)
     
-    updated_readme = update_readme(readme_content, codebase)
+    # Convert HTML to Markdown
+    h = html2text.HTML2Text()
+    h.ignore_links = False
+    markdown_content = h.handle(readme_content)
+    
+    updated_readme = update_readme(markdown_content, codebase)
     
     with open(readme_path, 'w') as file:
         file.write(updated_readme)
